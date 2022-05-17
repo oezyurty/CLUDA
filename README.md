@@ -14,3 +14,11 @@ Once you have access the ICU dataset(s), you can load them with R. For this, you
 ### Preparing ICU Datasets
 
 This step converts the output from previous step into np.array format to be used in Python. For this, you can follow the steps at [prepare_ICU_datasets](./prepare_ICU_datasets).
+
+### CL4UDATS
+
+Our main model architecture can be found [here](model/model.py). 
+
+In [model](model), you can find all the scripts to train and evaluate our model. Further, you can find the script for getting the embeddings for your downstream tasks.
+
+All the helper functions/classes are in [utils](utils). If you want to do some changes in dataset format, you can find it useful to check our [ICUDataset] (utils/dataset.py) class.
