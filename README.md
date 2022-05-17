@@ -21,4 +21,4 @@ Our main model architecture can be found [here](model/model.py).
 
 In [model](model), you can find all the scripts to train and evaluate our model. Further, you can find the script for getting the embeddings for your downstream tasks.
 
-All the helper functions/classes are in [utils](utils). If you want to do some changes in dataset format, you can find it useful to check our [ICUDataset] (utils/dataset.py) class.
+All the helper functions/classes are in [utils](utils). If you want to do some changes in dataset format, you can find it useful to check our [ICUDataset](utils/dataset.py) class.
