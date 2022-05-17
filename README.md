@@ -17,6 +17,10 @@ This step converts the output from previous step into np.array format to be used
 
 ### CL4UDATS
 
+We used Python 3.6.5 in our experiments. 
+
+You can install the requirement libraries via `pip install -r requirements.txt` into your new virtual Python environment.
+
 Our main model architecture can be found [here](model/model.py). 
 
 In [model](model), you can find all the scripts to train and evaluate our model. Further, you can find the script for getting the embeddings for your downstream tasks.
