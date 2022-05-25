@@ -12,7 +12,7 @@ import torch.optim.lr_scheduler as lr_scheduler
 from utils.dataset import ICUDataset
 from utils.augmentations import Augmenter, concat_mask
 
-from model import CL4UDATS
+from model import CLUDA
 
 #from utils.mlp import MLP
 
@@ -81,7 +81,7 @@ def main(args):
 
     augmenter = Augmenter()
 
-    model = CL4UDATS(num_inputs=(1+args.use_mask)*dataset_src[0]['sequence'].shape[1], output_dim=output_dim, num_channels=[64,64,64,64,64], num_static=dataset_src[0]['static'].shape[0], 
+    model = CLUDA(num_inputs=(1+args.use_mask)*dataset_src[0]['sequence'].shape[1], output_dim=output_dim, num_channels=[64,64,64,64,64], num_static=dataset_src[0]['static'].shape[0], 
         use_static=False, mlp_hidden_dim=256, use_batch_norm=args.use_batch_norm, kernel_size=3, dropout=args.dropout, K=args.queue_size, m=args.momentum)
 
     model.cuda()
