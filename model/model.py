@@ -11,7 +11,7 @@ from utils.nearest_neighbor import NN, sim_matrix
 from utils.mlp import MLP
 
 
-class CL4UDATS(nn.Module):
+class CLUDA(nn.Module):
 
     def __init__(self, num_inputs, output_dim, num_channels, num_static, use_static=True, mlp_hidden_dim=256, use_batch_norm=True, num_neighbors = 1, kernel_size=2, dropout=0.2, K=24576, m=0.999, T=0.07):
         """
@@ -20,7 +20,7 @@ class CL4UDATS(nn.Module):
         m: moco momentum of updating key encoder (default: 0.999)
         T: softmax temperature (default: 0.07)
         """
-        super(CL4UDATS, self).__init__()
+        super(CLUDA, self).__init__()
 
         self.sigmoid = nn.Sigmoid()
 
