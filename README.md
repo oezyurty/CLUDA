@@ -1,4 +1,4 @@
-# CL4UDATS: Contrastive Learning for Unsupervised Domain Adaptation of Time Series
+# CLUDA: Contrastive Learning for Unsupervised Domain Adaptation of Time Series
 
 ### Accessing ICU Datasets MIMIC-IV and AmsterdamUMCdb
 If you want to do experiments on MIMIC-IV and AmsterdamUMCdb, first you need to get permission for these datasets even though it is publicly available. 
@@ -15,7 +15,7 @@ Once you have access the ICU dataset(s), you can load them with R. For this, you
 
 This step converts the output from previous step into np.array format to be used in Python. For this, you can follow the steps at [prepare_ICU_datasets](./prepare_ICU_datasets).
 
-### CL4UDATS
+### CLUDA
 
 We used Python 3.6.5 in our experiments. 
 
