@@ -32,6 +32,6 @@ In [main](main), you can find all the scripts to train and evaluate our model. F
 
 For instance, you can train our model with the default arguments as (assuming that you prepared the datasets as in earlier step.)
 
-`python train_model.py --task decompensation --path_src ../Data/miiv_fullstays --path_trg ../Data/aumc_fullstays --experiments_main_folder UDA_decompensation --experiment_folder default` 
+`python train.py --algo_name cluda --task decompensation --path_src ../Data/miiv_fullstays --path_trg ../Data/aumc_fullstays --experiments_main_folder UDA_decompensation --experiment_folder default` 
 
 All the helper functions/classes are in [utils](utils). If you want to do some changes in dataset format, you can find it useful to check our [ICUDataset](utils/dataset.py) class or [SensorDataset](utils/dataset.py) class.

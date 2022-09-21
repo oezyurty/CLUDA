@@ -283,7 +283,7 @@ if __name__ == '__main__':
 
     parser = ArgumentParser(description="parse args")
 
-    parser.add_argument('--algo_name', type=str, default='dann')
+    parser.add_argument('--algo_name', type=str, default='cluda')
 
     parser.add_argument('-dr', '--dropout', type=float, default=0.0)
     parser.add_argument('-mo', '--momentum', type=float, default=0.99) #CLUDA
