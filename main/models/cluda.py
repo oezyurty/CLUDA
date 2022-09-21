@@ -1,4 +1,3 @@
-#Time Series Version of MoCo, with TCN used as encoder 
 import sys
 sys.path.append("../..")
 import torch
@@ -25,19 +24,11 @@ class ReverseLayerF(Function):
         return output, None
 
 
-class DA_MoCoNNQQ_Disc_TCN_Siam(nn.Module):
-    """
-    Build a MoCo model with: a query encoder, a key encoder, and a queue
-    https://arxiv.org/abs/1911.05722
-    """
+class CLUDA_NN(nn.Module):
+
     def __init__(self, num_inputs, output_dim, num_channels, num_static, mlp_hidden_dim=256, use_batch_norm=True, num_neighbors = 1, kernel_size=2, stride=1, dilation_factor=2, dropout=0.2, K=24576, m=0.999, T=0.07):
-        """
-        dim: feature dimension (default: 128)
-        K: queue size; number of negative keys (default: 65536)
-        m: moco momentum of updating key encoder (default: 0.999)
-        T: softmax temperature (default: 0.07)
-        """
-        super(DA_MoCoNNQQ_Disc_TCN_Siam, self).__init__()
+
+        super(CLUDA_NN, self).__init__()
 
         self.sigmoid = nn.Sigmoid()
 

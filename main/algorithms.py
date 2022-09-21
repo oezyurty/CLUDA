@@ -23,7 +23,7 @@ from utils.loss import PredictionLoss
 
 from models.models import ReverseLayerF, VRNN, AdvSKM_Disc
 from models.loss import MMD_loss, ConditionalEntropyLoss, CORAL, LMMD_loss, HoMM_loss
-from models.cluda import DA_MoCoNNQQ_Disc_TCN_Siam
+from models.cluda import CLUDA_NN
 
 
 import torch.nn.functional as F
@@ -1411,7 +1411,7 @@ class CLUDA(Base_Algorithm):
         self.input_static_dim = input_static_dim
 
         #different from other algorithms, we import entire model at onces. (i.e. no separate feature extractor or classifier)
-        self.model = DA_MoCoNNQQ_Disc_TCN_Siam(num_inputs=(1+args.use_mask)*input_channels_dim, output_dim=self.output_dim, num_channels=self.num_channels, num_static=input_static_dim, 
+        self.model = CLUDA_NN(num_inputs=(1+args.use_mask)*input_channels_dim, output_dim=self.output_dim, num_channels=self.num_channels, num_static=input_static_dim, 
             mlp_hidden_dim=args.hidden_dim_MLP, use_batch_norm=args.use_batch_norm, kernel_size=args.kernel_size_TCN,
             stride=args.stride_TCN, dilation_factor=args.dilation_factor_TCN, dropout=args.dropout, K=args.queue_size, m=args.momentum)
 
