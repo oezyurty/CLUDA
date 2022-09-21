@@ -1,26 +1,43 @@
 #Time Series Version of MoCo, with TCN used as encoder 
 import sys
-sys.path.append("..")
+sys.path.append("../..")
 import torch
 import torch.nn as nn
 import numpy as np
 
 #Import our encoder 
-from utils.tcn import TemporalConvNet
+from utils.tcn_no_norm import TemporalConvNet
 from utils.nearest_neighbor import NN, sim_matrix
 from utils.mlp import MLP
 
 
-class CLUDA(nn.Module):
+#Helper function for reversing the discriminator backprop
+from torch.autograd import Function
+class ReverseLayerF(Function):
+    @staticmethod
+    def forward(ctx, x, alpha):
+        ctx.alpha = alpha
+        return x.view_as(x)
 
-    def __init__(self, num_inputs, output_dim, num_channels, num_static, use_static=True, mlp_hidden_dim=256, use_batch_norm=True, num_neighbors = 1, kernel_size=2, dropout=0.2, K=24576, m=0.999, T=0.07):
+    @staticmethod
+    def backward(ctx, grad_output):
+        output = grad_output.neg() * ctx.alpha
+        return output, None
+
+
+class DA_MoCoNNQQ_Disc_TCN_Siam(nn.Module):
+    """
+    Build a MoCo model with: a query encoder, a key encoder, and a queue
+    https://arxiv.org/abs/1911.05722
+    """
+    def __init__(self, num_inputs, output_dim, num_channels, num_static, mlp_hidden_dim=256, use_batch_norm=True, num_neighbors = 1, kernel_size=2, stride=1, dilation_factor=2, dropout=0.2, K=24576, m=0.999, T=0.07):
         """
         dim: feature dimension (default: 128)
         K: queue size; number of negative keys (default: 65536)
         m: moco momentum of updating key encoder (default: 0.999)
         T: softmax temperature (default: 0.07)
         """
-        super(CLUDA, self).__init__()
+        super(DA_MoCoNNQQ_Disc_TCN_Siam, self).__init__()
 
         self.sigmoid = nn.Sigmoid()
 
@@ -31,8 +48,10 @@ class CLUDA(nn.Module):
 
         # encoders
         # num_classes is the output fc dimension
-        self.encoder_q = TemporalConvNet(num_inputs, num_channels, kernel_size, dropout)
-        self.encoder_k = TemporalConvNet(num_inputs, num_channels, kernel_size, dropout)
+        self.encoder_q = TemporalConvNet(num_inputs=num_inputs, num_channels=num_channels, kernel_size=kernel_size, 
+                                            stride=stride, dilation_factor=dilation_factor, dropout=dropout)
+        self.encoder_k = TemporalConvNet(num_inputs=num_inputs, num_channels=num_channels, kernel_size=kernel_size, 
+                                            stride=stride, dilation_factor=dilation_factor, dropout=dropout)
 
         #projector for query
         self.projector = MLP(input_dim = num_channels[-1] , hidden_dim = mlp_hidden_dim, 
@@ -231,16 +250,3 @@ class CLUDA(nn.Module):
         y = self.predictor(q, static)
         
         return y
-        
- 
- #For discriminator
- class ReverseLayerF(Function):
-    @staticmethod
-    def forward(ctx, x, alpha):
-        ctx.alpha = alpha
-        return x.view_as(x)
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        output = grad_output.neg() * ctx.alpha
-        return output, None

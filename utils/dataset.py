@@ -5,13 +5,60 @@ import torch.nn as nn
 
 from torch.utils.data import Dataset, DataLoader
 
+def get_dataset(args, domain_type, split_type):
+    """
+    Return the correct dataset object that will be fed into datalaoder
+    args: args of main script
+    domain_type: "source" or "target"
+    split_type: "train" or "val" or "test"
+
+    Note: If args.path_src (or trg) includes "miiv" or "aumc", it will return ICUDataset
+    Otherwise, it will return SensorDataset
+    """
+    
+    if "miiv" in args.path_src or "aumc" in args.path_src:
+        if domain_type == "source":
+            return ICUDataset(args.path_src, task=args.task, split_type=split_type, age_group=getattr(args, "age_src", -1), is_full_subset=True, is_cuda=True)
+        else:
+            return ICUDataset(args.path_trg, task=args.task, split_type=split_type, age_group=getattr(args, "age_trg", -1), is_full_subset=True, is_cuda=True)
+
+    else:
+        if domain_type == "source":
+            return SensorDataset(args.path_src, subject_id=args.id_src, split_type=split_type, is_cuda=True)
+        else:
+            return SensorDataset(args.path_trg, subject_id=args.id_trg, split_type=split_type, is_cuda=True)
+
+
+def get_output_dim(args):
+    """
+    It is hard-coded output dims for each dataset and task
+    FOR ICU datasets: output dim is 1 for mortality and decompensation, and 10 for los
+    For Sensor Datasets: output dim is 6 for WISDM,HAR and HHAR, and 5 for SSC
+    """
+    output_dim = -1
+
+    if "miiv" in args.path_src or "aumc" in args.path_src:
+        if args.task != "los":
+            output_dim = 1
+        else:
+            output_dim = 10
+    elif "SSC" in args.path_src:
+        output_dim = 5
+    else:
+        output_dim = 6
+
+    return output_dim
+
+
 class ICUDataset(Dataset):
     
-    def __init__(self, root_dir, split_type="train", stay_hours=48, min_hours=4, task="mortality", is_full_subset=False, subsample_patients=1.0, is_cuda=True, verbose=False):
+    def __init__(self, root_dir, split_type="train", age_group=-1, stay_hours=48, min_hours=4, task="mortality", is_full_subset=False, subsample_patients=1.0, is_cuda=True, verbose=False):
         """
         Inputs:
             root_dir: Directory to load ICU stays
             split_type: One of {"train", "val", "test"}. If test, all sub-sequences (>= min_hours) will be tested.
+            age_group: There are 5 age groups: 1-> 0-19, 2-> 20-45, 3-> 46-65, 4-> 66-85, 5->85+ 
+                If -1, all age groups will be used. 
             stay_hours: Length of each sequence. If sequence is shorter than stay_hours, it will be padded; else, it will be randomly cropped
             min_hours: Sequences shorter than min_hours will be ignored (i.e. removed when loading the data)
             task: It determines the label. One of {"mortality", "decompensation", "los"}:
@@ -26,6 +73,7 @@ class ICUDataset(Dataset):
         """
         self.root_dir = root_dir
         self.split_type = split_type
+        self.age_group = age_group
         self.stay_hours = stay_hours
         self.min_hours = min_hours
         self.task = task
@@ -33,6 +81,10 @@ class ICUDataset(Dataset):
         self.verbose = verbose
         self.is_full_subset = is_full_subset
         self.subsample_patients = subsample_patients
+
+        #Hard coded means and std of age dist
+        self.ages_miiv = [63.55277, 17.259564] #mean and std
+        self.ages_aumc = [62.61017, 16.420369] #mean and std
         
         self.load_stays()
         
@@ -141,13 +193,51 @@ class ICUDataset(Dataset):
             self.static = self.static[cond_subsample]
             self.mortality = self.mortality[cond_subsample]
 
+
+        #SUBSET THE PATIENTS BY THEIR AGE CATEGORY IF needed
+        if self.age_group != -1:
+
+            if "miiv" in self.root_dir:
+                age_mean = self.ages_miiv[0]
+                age_std = self.ages_miiv[1]
+            else:
+                age_mean = self.ages_aumc[0]
+                age_std = self.ages_aumc[1]
+
+            ages_org = self.static[:,0] * age_std + age_mean
+
+            if self.age_group == 1:
+                age_min=0
+                age_max=19.9
+            elif self.age_group == 2:
+                age_min=19.9
+                age_max=45
+            elif self.age_group == 3:
+                age_min=45
+                age_max=65
+            elif self.age_group == 4:
+                age_min=65
+                age_max=85
+            #Age group 5
+            else:
+                age_min=85
+                age_max=120
+
+            cond_age = np.logical_and(ages_org > age_min, ages_org <= age_max)
+            print("There are " +str(cond_age.sum()) + " people in the age group " + str(self.age_group))
+
+            self.sequence = self.sequence[cond_age]
+            self.sequence_mask = self.sequence_mask[cond_age]
+            self.static = self.static[cond_age]
+            self.mortality = self.mortality[cond_age]
+
+
+
         #To reduce memory consumption, we will only keep the necessary elements as a list (id and end_index)
         # to generate the data when needed
         if self.is_full_subset:
 
             self.stay_dict = np.concatenate(list(map(lambda seq, i: self.seq_to_dict_helper(seq, i), self.sequence, np.arange(len(self.sequence)))), axis=0)
-
-
 
     def seq_to_dict_helper(self, sequence, id_):
         end_indices = np.arange(self.min_hours, len(sequence)+1).reshape(-1,1)
@@ -190,11 +280,57 @@ class ICUDataset(Dataset):
         #Bins are (0, 1) (1, 2) (2, 3) (3, 4) (4, 5) (5, 6) (6, 7) (7, 8) (8, 14) (14+) in days. 
         if los < 24*8:
             label = los // 24
-        elif los >= 24*8 and los<24*14:
+        elif los >= 24*8 and los<14*8:
             label = 8
         else:
             label = 9
         return label
+
+
+class SensorDataset(Dataset):
+    
+    def __init__(self, root_dir, subject_id, split_type="train", is_cuda=True, verbose=False):
+        
+        self.root_dir = root_dir
+        self.subject_id = subject_id
+        self.split_type = split_type
+        self.is_cuda = is_cuda
+        self.verbose = verbose
+        
+        self.load_sequence()
+        
+    def __len__(self):
+        
+        return len(self.sequence)
+    
+    def __getitem__(self, id_):
+        
+        sequence = self.sequence[id_]
+        sequence_mask = np.ones(sequence.shape)
+        label = self.label[id_]
+        
+        if self.is_cuda:
+            sequence = torch.Tensor(sequence).float().cuda()
+            sequence_mask = torch.Tensor(sequence_mask).long().cuda()
+            label = torch.Tensor([label]).long().cuda()
+        else:
+            sequence = torch.Tensor(sequence).float()
+            sequence_mask = torch.Tensor(sequence_mask).long()
+            label = torch.Tensor([label]).long()
+            
+        sample = {"sequence":sequence, "sequence_mask":sequence_mask, "label":label}
+        
+        return sample
+
+    def load_sequence(self):
+        
+        path_subject = os.path.join(self.root_dir, "subject_"+str(self.subject_id))
+        
+        path_sequence = os.path.join(path_subject, "timeseries_"+self.split_type+".npy")
+        path_label = os.path.join(path_subject, "label_"+self.split_type+".npy")
+        
+        self.sequence = np.load(path_sequence, allow_pickle=True)
+        self.label = np.load(path_label, allow_pickle=True)
 
 def collate_test(batch):
     #The input is list of dictionaries
@@ -206,5 +342,6 @@ def collate_test(batch):
         val = torch.cat(val, dim=0)
         out[key] = val
     return out
+
 
 
