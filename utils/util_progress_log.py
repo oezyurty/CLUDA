@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
-from sklearn.metrics import roc_auc_score, accuracy_score, average_precision_score, cohen_kappa_score
+from sklearn.metrics import roc_auc_score, accuracy_score, average_precision_score, cohen_kappa_score, f1_score
 import logging
 
 def get_logger(log_file):
@@ -15,7 +15,17 @@ def get_logger(log_file):
 
     return log
 
+#We keep the dictionary of metrics for each dataset and task
+dict_metrics = {"icu": {"decompensation": {"roc_auc": roc_auc_score, "avg_prc": average_precision_score}, 
+                        "mortality": {"roc_auc": roc_auc_score, "avg_prc": average_precision_score},
+                        "los": {"kappa": cohen_kappa_score}},
+                "sensor": {"acc": accuracy_score, "mac_f1": f1_score, "w_f1": f1_score}}
 
+def get_dataset_type(args):
+    if "miiv" in args.path_src or "aumc" in args.path_src:
+        return "icu"
+    else:
+        return "sensor"
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -65,15 +75,24 @@ class ProgressMeter(object):
 
 
 class PredictionMeter(object):
-    def __init__(self, task="decompensation"):
-        self.task = task
+    def __init__(self, args):
+        self.args = args
+        self.dataset_type = get_dataset_type(args)
         self.target_list = []
         self.output_list = []
         self.id_patient_list = []
         self.stay_hours_list = []
 
+        #Initialize the metric dictionary to be returned 
+        self.dict_metrics = {}
+        if self.dataset_type == "icu":
+            self.dict_metrics = dict_metrics[self.dataset_type][self.args.task]
+        else:
+            self.dict_metrics = dict_metrics[self.dataset_type]
+
     def update(self, target, output, id_patient = None, stay_hour = None):
-        if self.task != "los":
+        #In case of ICU and binary classification
+        if self.dataset_type == "icu" and self.args.task != "los":
             output_np = output.detach().cpu().numpy().flatten()
         else:
             output_np = output.detach().cpu().numpy().argmax(axis=1).flatten()
@@ -95,6 +114,7 @@ class PredictionMeter(object):
         return_dict = {}
         output = np.array(self.output_list)
         target = np.array(self.target_list)
+        """
         if self.task != "los":
             roc_auc = roc_auc_score(target, output)
             avg_prc = average_precision_score(target, output)
@@ -105,6 +125,16 @@ class PredictionMeter(object):
         else:
             kappa = cohen_kappa_score(output, target)
             return_dict["kappa"] = kappa
+        """
+
+
+        for k in self.dict_metrics:
+            if k == "mac_f1":
+                return_dict[k] = self.dict_metrics[k](target, output, average="macro")
+            elif k == "w_f1":
+                return_dict[k] = self.dict_metrics[k](target, output, average="weighted")
+            else:
+                return_dict[k] = self.dict_metrics[k](target, output)
 
         return return_dict
 
