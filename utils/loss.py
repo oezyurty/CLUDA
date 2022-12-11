@@ -4,7 +4,8 @@ import torch.nn.functional as F
 
 
 class PredictionLoss(object):
-    def __init__(self, task="decompensation", weight_ratio=None):
+    def __init__(self, dataset_type="icu", task="decompensation", weight_ratio=None):
+        self.dataset_type = dataset_type
         self.task = task
         self.weight_ratio = weight_ratio
         self.get_loss_weights()
@@ -19,7 +20,7 @@ class PredictionLoss(object):
 
     #Return the appropriate prediction loss for the related task
     def get_prediction_loss(self, output, target):
-        if self.task != "los":
+        if self.dataset_type == "icu" and self.task != "los":
             batch_loss_weights = target * self.loss_weights[1] + (1 - target) * self.loss_weights[0]
             loss = F.binary_cross_entropy(output, target, weight = batch_loss_weights)
         else:
