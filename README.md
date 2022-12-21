@@ -46,6 +46,8 @@ All the helper functions/classes are in [utils](utils). If you want to do some c
 
 Below, we describe each argument used in the training script. Please note that the number of arguments is large because all the experimental setup is controlled here. In other words, with the arguments provided below, the user can freely experiment with both sensor and healthcare datasets and also with any other UDA algorithm or our novel CLUDA. We opted this design, so that the user doesn't need to go over any other scripts/documents other than this one, for his/her own unique experimental setup.
 
+Note: If an argument is not used for a given algorithm (i.e., it is valid only for other methods), its value has no effect on the training. 
+
 | Argument | Description |
 | --- | --- |
 | algo_name | Name of the UDA algorithm. See [algorithms](main/algorithms.py) for available options |
