@@ -94,4 +94,33 @@ Note: If an argument is not used for a given algorithm (i.e., it is valid only f
 | seed | Random seed. With a fixed seed, the code should yield the same result for the same computing node. (useful for debug and controlled random instantiations) |
 
 
+### Running Examples
 
+To facilitate a straight-forward usage for the user, here we provide the concrete examples of how to run our CLUDA on sensor datasets. Below configurations will provide similar results presented in our paper. These configurations don't require high computational resources, ~4GB GPU memory should be sufficient. 
+
+Note: As pre-requisite, you need to download the sensor datasets and run [train_val_test_benchmark.ipynb](train_val_test_benchmark.ipynb) before.
+
+Note: Don't forget to manually fill <path/to/Dataset>, <ID_src>, and <ID_trg> fields according to your own setup.
+
+#### Training on WISDM
+
+`python train.py --algo_name cluda --queue_size 8192 --momentum 0.99 --batch_size 32 --eval_batch_size 1024 --num_epochs 10000 --num_steps 10000  --weight_loss_disc 1  --weight_loss_src 0.1 --weight_loss_trg 0.1 --weight_loss_ts 0.2 --learning_rate 1e-4 --dropout 0.2 --weight_decay 1e-4 --num_channels_TCN 32-32-32-32-32-32 --dilation_factor_TCN 2—kernel_size_TCN 3 --hidden_dim_MLP 128 --path_src <path/to/WISDM> --id_src <ID_src> --path_trg <path/to/WISDM> --id_trg <ID_trg> --experiments_main_folder experiment_WISDM_<ID_src>_<ID_trg> --experiment_folder default`
+
+
+#### Training on HAR
+
+`python train.py --algo_name cluda --queue_size 8192 --momentum 0.99 --batch_size 32 --eval_batch_size 1024 --num_epochs 10000 --num_steps 10000  --weight_loss_disc 1  --weight_loss_src 0.05 --weight_loss_trg 0.05 --weight_loss_ts 0.1 --learning_rate 1e-4 --dropout 0.2 --weight_decay 1e-4 --num_channels_TCN 64-64-64 --dilation_factor_TCN 3—kernel_size_TCN 7 --hidden_dim_MLP 128 --path_src <path/to/HAR> --id_src <ID_src> --path_trg <path/to/HAR> --id_trg <ID_trg> --experiments_main_folder experiment_HAR_<ID_src>_<ID_trg> --experiment_folder default`
+
+#### Training on HHAR
+
+`python train.py --algo_name cluda --queue_size 8192 --momentum 0.99 --batch_size 32 --eval_batch_size 1024 --num_epochs 10000 --num_steps 10000  --weight_loss_disc 1  --weight_loss_src 0.05 --weight_loss_trg 0.05 --weight_loss_ts 0.1 --learning_rate 1e-4 --dropout 0 --weight_decay 1e-4 --num_channels_TCN 64-64-64 --dilation_factor_TCN 3—kernel_size_TCN 7 --hidden_dim_MLP 128 --path_src <path/to/HHAR> --id_src <ID_src> --path_trg <path/to/HHAR> --id_trg <ID_trg> --experiments_main_folder experiment_HHAR_<ID_src>_<ID_trg> --experiment_folder default`
+
+#### Training with other UDA algorithms
+
+In case you want to test/compare other UDA algorithms, you can follow these steps: Change the algo_name with your preferred UDA algorithm. Keep TCN related arguments fixed (for a fair comparison among UDA methods), only exception is VRADA, which needs to be tuned separately. Add weight_loss arguments of the corresponding UDA algorithm (see our detailed table of arguments, and Appendix of our paper). To further improve the results, now you can tune other parameters.  
+
+#### Evaluation
+
+Once the training is completed, you only need to provide <experiments_main_folder> and <experiment_folder>. The rest will be retrieved from the saved arguments and the saved model. 
+
+`python eval.py --experiments_main_folder <experiments_main_folder> --experiment_folder <experiment_folder>`
