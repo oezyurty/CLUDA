@@ -85,8 +85,8 @@ Note: If an argument is not used for a given algorithm (i.e., it is valid only f
 | experiment_folder | The child folder of experiments_main_folder. It will be created under experiments_main_folder if it doesn't exist |
 | path_src | Root directory of source domain dataset. For instance, "miiv_fullstays" for healthcare or "WISDM" for sensor datasets|
 | path_trg | Root directory of target domain dataset. For instance, "miiv_fullstays" for healthcare or "WISDM" for sensor datasets|
-| age_src | (For healthcare dataset) Age group of the source domain |
-| age_trg | (For healthcare dataset) Age group of the target domain |
+| age_src | (For healthcare dataset) Age group of the source domain. If you input -1, the model will use all age groups together. |
+| age_trg | (For healthcare dataset) Age group of the target domain. If you input -1, the model will use all age groups together. |
 | id_src | (For sensor dataset) ID of the subject for the source domain |
 | id_trg | (For sensor dataset) ID of the subject for the target domain |
 | task | (For healthcare dataset) The task to perform. Choose from {"mortality", "decompensation", "los"} (los: length of stay) |
@@ -94,13 +94,13 @@ Note: If an argument is not used for a given algorithm (i.e., it is valid only f
 | seed | Random seed. With a fixed seed, the code should yield the same result for the same computing node. (useful for debug and controlled random instantiations) |
 
 
-### Running Examples
+### Running Examples on Sensor Datasets
 
 To facilitate a straight-forward usage for the user, here we provide the concrete examples of how to run our CLUDA on sensor datasets. Below configurations will provide similar results presented in our paper. These configurations don't require high computational resources, ~4GB GPU memory should be sufficient. 
 
-Note: As pre-requisite, you need to download the sensor datasets and run [train_val_test_benchmark.ipynb](train_val_test_benchmark.ipynb) before.
+**Note**: As pre-requisite, you need to download the sensor datasets and run [train_val_test_benchmark.ipynb](train_val_test_benchmark.ipynb) before.
 
-Note: Don't forget to manually fill <path/to/Dataset>, <ID_src>, and <ID_trg> fields according to your own setup.
+**Note**: Don't forget to manually fill <path/to/Dataset>, <ID_src>, and <ID_trg> fields according to your own setup.
 
 #### Training on WISDM
 
@@ -124,3 +124,15 @@ In case you want to test/compare other UDA algorithms, you can follow these step
 Once the training is completed, you only need to provide <experiments_main_folder> and <experiment_folder>. The rest will be retrieved from the saved arguments and the saved model. 
 
 `python eval.py --experiments_main_folder <experiments_main_folder> --experiment_folder <experiment_folder>`
+
+### Running Examples on Healthcare Datasets
+
+Here we further provide a concrete example of how to run our CLUDA on healthcare datasets, such as MIMIC-IV and AmsterdamUMCdb. Below configuration should provide a decent start in prediction performance, which could be enhanced by further hyper-parameter tuning. Different from sensor datasets, these healtchare datasets are large, and hence, may require larger batches,longer training time and higher GPU memory (~10 GB). 
+
+**Note**: As pre-requisite, you need to download the healthcare datasets and pre-process as explained in our repo.
+
+**Note**: Don't forget to manually fill <path/to/Dataset>, <task>, <age_src>, and <age_trg> fields according to your own setup. If you want to use all age groups, you can use -1 for <age_src> and/or <age_trg>.
+
+`python train.py --algo_name cluda --queue_size 49152 --momentum 0.99 --batch_size 2048 --eval_batch_size 2048 --num_epochs 10000 --num_steps 10000  --weight_loss_disc 1  --weight_loss_src 0.05 --weight_loss_trg 0.05 --weight_loss_ts 0.2 --learning_rate 2e-5 --dropout 0.0 --weight_decay 1e-4 --num_channels_TCN 64-64-64-64-64 --dilation_factor_TCN 2 --kernel_size_TCN 3 --hidden_dim_MLP 256 --use_mask --path_src <path/to/Dataset_src> --age_src <age_src> --path_trg <path/to/Dataset_trg> --id_trg <age_trg> --task <task> --experiments_main_folder experiment_<Dataset_src>_<age_src>_<Dataset_trg>_<age_trg> --experiment_folder default`
+
+For training with other UDA methods and evaluation, you can use the same strategy as in above subsection. 
