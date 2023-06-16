@@ -1,4 +1,15 @@
-# CLUDA: Contrastive Learning for Unsupervised Domain Adaptation of Time Series
+# CLUDA: Contrastive Learning for Unsupervised Domain Adaptation of Time Series (ICLR 2023)
+
+The original implementation of the paper. You can cite the paper as below. 
+
+```
+@article{ozyurt2022contrastive,
+  title={Contrastive Learning for Unsupervised Domain Adaptation of Time Series},
+  author={Ozyurt, Yilmazcan and Feuerriegel, Stefan and Zhang, Ce},
+  journal={ICLR},
+  year={2023}
+}
+```
 
 ### Loading and Preparing Benchmark Datasets
 First, create a folder and download the pre-processed versions of the datasets [WISDM](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/KJWE5B), [HAR](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/0SYHTZ), and [HHAR](https://researchdata.ntu.edu.sg/dataset.xhtml?persistentId=doi:10.21979/N9/OWDFXO). 
