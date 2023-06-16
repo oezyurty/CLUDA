@@ -3,7 +3,7 @@
 The original implementation of the paper. You can cite the paper as below. 
 
 ```
-@article{ozyurt2022contrastive,
+@article{ozyurt2023contrastive,
   title={Contrastive Learning for Unsupervised Domain Adaptation of Time Series},
   author={Ozyurt, Yilmazcan and Feuerriegel, Stefan and Zhang, Ce},
   journal={ICLR},
