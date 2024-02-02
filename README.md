@@ -1,5 +1,7 @@
 # CLUDA: Contrastive Learning for Unsupervised Domain Adaptation of Time Series (ICLR 2023)
 
+![The overview of our CLUDA framework](overview.png)
+
 The original implementation of the paper. You can cite the paper as below. 
 
 ```
