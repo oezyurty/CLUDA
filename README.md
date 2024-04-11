@@ -126,7 +126,7 @@ To facilitate a straight-forward usage for the user, here we provide the concret
 
 #### Training on HHAR
 
-`python train.py --algo_name cluda --queue_size 8192 --momentum 0.99 --batch_size 32 --eval_batch_size 1024 --num_epochs 10000 --num_steps 10000  --weight_loss_disc 1  --weight_loss_src 0.05 --weight_loss_trg 0.05 --weight_loss_ts 0.1 --learning_rate 1e-4 --dropout 0 --weight_decay 1e-4 --num_channels_TCN 64-64-64 --dilation_factor_TCN 3 -—kernel_size_TCN 7 --hidden_dim_MLP 128 --path_src <path/to/HHAR> --id_src <ID_src> --path_trg <path/to/HHAR> --id_trg <ID_trg> --experiments_main_folder experiment_HHAR_<ID_src>_<ID_trg> --experiment_folder default`
+`python train.py --algo_name cluda --queue_size 8192 --momentum 0.99 --batch_size 32 --eval_batch_size 1024 --num_epochs 10000 --num_steps 10000  --weight_loss_disc 1  --weight_loss_src 0.05 --weight_loss_trg 0.05 --weight_loss_ts 0.1 --learning_rate 1e-4 --dropout 0.2 --weight_decay 1e-4 --num_channels_TCN 64-64-64 --dilation_factor_TCN 3 -—kernel_size_TCN 7 --hidden_dim_MLP 128 --path_src <path/to/HHAR> --id_src <ID_src> --path_trg <path/to/HHAR> --id_trg <ID_trg> --experiments_main_folder experiment_HHAR_<ID_src>_<ID_trg> --experiment_folder default`
 
 #### Training with other UDA algorithms
 
